@@ -1,6 +1,6 @@
 require("dotenv").config();
 const axios = require("axios");
-const lookup = require("country-code-lookup");
+const logger = require("./logger");
 
 const getHoliday = async (country) => {
   try {
@@ -14,15 +14,10 @@ const getHoliday = async (country) => {
         day: currentDate.getUTCDate(),
       },
     });
-    if (holiday.data[0]) {
-      return `In ${holiday.data[0].location} today is ${holiday.data[0].name}.`;
-    } else {
-      return `There are no holidays in ${
-        lookup.byIso(country).country
-      } today that I know of.`;
-    }
+    return holiday.data;
   } catch (error) {
-    console.error(error);
+    logger.error(error);
   }
 };
+
 module.exports = getHoliday;

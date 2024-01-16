@@ -1,14 +1,16 @@
 require("dotenv").config();
 const telegramBot = require("node-telegram-bot-api");
 const responses = require("./src/responses.js");
+const logger = require("./src/logger.js");
 const getHoliday = require("./src/getHoliday.js");
-const { emojiCountryCode } = require("country-code-emoji");
+const { flagToCountry } = require("emoji-flags-to-country");
+const lookup = require("country-code-lookup");
 
 const token = process.env.TELEGRAM_TOKEN;
 
 const bot = new telegramBot(token, { polling: true });
 
-bot.on("polling_error", console.error);
+bot.on("polling_error", logger.error);
 
 Object.entries(responses).forEach(([command, response]) => {
   const regespCommand = new RegExp(command);
@@ -20,27 +22,33 @@ Object.entries(responses).forEach(([command, response]) => {
         },
       });
     } catch (error) {
-      console.error(error);
+      logger.error(error);
     }
   });
 });
 
 bot.on("message", async (msg) => {
-  try {
-    const result = await getHoliday(emojiCountryCode(msg.text));
-    bot.sendMessage(msg.chat.id, result);
-  } catch (error) {
-    if (
-      error instanceof TypeError &&
-      error.message.includes("flag argument must be a flag emoji")
-    ) {
-      bot.sendMessage(
-        msg.chat.id,
-        "Wrong input. Please, send country flag emoji"
-      );
-    } else {
-      console.error(error);
-      bot.sendMessage(msg.chat.id, "Something went wrong");
-    }
+  if (responses.hasOwnProperty(msg.text.slice(1))) {
+    return;
+  }
+  const countryISOcode = flagToCountry(msg.text);
+  if (!countryISOcode) {
+    //Check if text/emoji is emoji country flag
+    bot.sendMessage(msg.chat.id, "Please, send country flag emoji.");
+    return;
+  }
+  const holiday = await getHoliday(countryISOcode); //Get country holiday if it exists
+  if (holiday[0]) {
+    bot.sendMessage(
+      msg.chat.id,
+      `In ${holiday[0].location} today is ${holiday[0].name}`
+    );
+  } else {
+    bot.sendMessage(
+      msg.chat.id,
+      `There are no holidays in ${
+        lookup.byIso(countryISOcode).country
+      } today that I know of.`
+    );
   }
 });
