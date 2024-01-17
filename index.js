@@ -28,9 +28,11 @@ Object.entries(responses).forEach(([command, response]) => {
 });
 
 bot.on("message", async (msg) => {
-  if (responses.hasOwnProperty(msg.text.slice(1))) {
+  const commandsList = Object.keys(responses);
+  if (commandsList.includes(msg.text) || msg.text[0] === "/") {
     return;
   }
+
   const countryISOcode = flagToCountry(msg.text);
   if (!countryISOcode) {
     //Check if text/emoji is emoji country flag
@@ -38,6 +40,14 @@ bot.on("message", async (msg) => {
     return;
   }
   const holiday = await getHoliday(countryISOcode); //Get country holiday if it exists
+
+  if (!holiday) {
+    bot.sendMessage(
+      msg.chat.id,
+      "Oops, something went wrong. Please try again."
+    );
+    return;
+  }
   if (holiday[0]) {
     bot.sendMessage(
       msg.chat.id,
