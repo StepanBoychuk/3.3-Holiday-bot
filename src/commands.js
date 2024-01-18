@@ -3,14 +3,14 @@ const keyboard = [
   ["🇺🇸", "🇸🇪", "🇯🇵", "🇬🇷"],
 ];
 
-const responses = {
-  start: {
+const commands = {
+  "/start": {
     text: "Welcome! Select a country from the keyboard or send me its flag emoji",
     options: {
       keyboard: keyboard,
     },
   },
-  help: {
+  "/help": {
     text: "Here is the keyboard with some of the available countries:",
     options: {
       keyboard: keyboard,
@@ -18,4 +18,4 @@ const responses = {
   },
 };
 
-module.exports = responses;
+module.exports = commands;

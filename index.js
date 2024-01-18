@@ -1,6 +1,6 @@
 require("dotenv").config();
 const telegramBot = require("node-telegram-bot-api");
-const responses = require("./src/responses.js");
+const commands = require("./src/commands.js");
 const logger = require("./src/logger.js");
 const getHoliday = require("./src/getHoliday.js");
 const { flagToCountry } = require("emoji-flags-to-country");
@@ -12,24 +12,14 @@ const bot = new telegramBot(token, { polling: true });
 
 bot.on("polling_error", logger.error);
 
-Object.entries(responses).forEach(([command, response]) => {
-  const regespCommand = new RegExp(command);
-  bot.onText(regespCommand, (msg) => {
-    try {
-      bot.sendMessage(msg.chat.id, response.text, {
-        reply_markup: {
-          keyboard: response.options.keyboard,
-        },
-      });
-    } catch (error) {
-      logger.error(error);
-    }
-  });
-});
-
 bot.on("message", async (msg) => {
-  const commandsList = Object.keys(responses);
-  if (commandsList.includes(msg.text) || msg.text[0] === "/") {
+  //Check if message contain a command
+  if (commands[msg.text]) {
+    bot.sendMessage(msg.chat.id, commands[msg.text].text, {
+      reply_markup: {
+        keyboard: commands[msg.text].options.keyboard,
+      },
+    });
     return;
   }
 
