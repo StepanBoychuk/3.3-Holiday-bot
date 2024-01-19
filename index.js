@@ -2,9 +2,7 @@ require("dotenv").config();
 const telegramBot = require("node-telegram-bot-api");
 const commands = require("./src/commands.js");
 const logger = require("./src/logger.js");
-const getHoliday = require("./src/getHoliday.js");
 const { flagToCountry } = require("emoji-flags-to-country");
-const lookup = require("country-code-lookup");
 const holidaysHandler = require("./src/holidaysHadler.js");
 
 const token = process.env.TELEGRAM_TOKEN;
