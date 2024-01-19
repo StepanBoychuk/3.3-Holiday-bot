@@ -5,6 +5,7 @@ const logger = require("./src/logger.js");
 const getHoliday = require("./src/getHoliday.js");
 const { flagToCountry } = require("emoji-flags-to-country");
 const lookup = require("country-code-lookup");
+const holidaysHandler = require("./src/holidaysHadler.js");
 
 const token = process.env.TELEGRAM_TOKEN;
 
@@ -22,33 +23,16 @@ bot.on("message", async (msg) => {
     });
     return;
   }
-
-  const countryISOcode = flagToCountry(msg.text);
-  if (!countryISOcode) {
-    //Check if text/emoji is emoji country flag
-    bot.sendMessage(msg.chat.id, "Please, send country flag emoji.");
-    return;
-  }
-  const holiday = await getHoliday(countryISOcode); //Get country holiday if it exists
-
-  if (!holiday) {
+  //Check if message contain a country flag emoji
+  if (flagToCountry(msg.text)) {
     bot.sendMessage(
       msg.chat.id,
-      "Oops, something went wrong. Please try again."
+      await holidaysHandler(flagToCountry(msg.text))
     );
     return;
   }
-  if (holiday[0]) {
-    bot.sendMessage(
-      msg.chat.id,
-      `In ${holiday[0].location} today is ${holiday[0].name}`
-    );
-  } else {
-    bot.sendMessage(
-      msg.chat.id,
-      `There are no holidays in ${
-        lookup.byIso(countryISOcode).country
-      } today that I know of.`
-    );
-  }
+  bot.sendMessage(
+    msg.chat.id,
+    "Unexpected command. Try /help to get possible commands"
+  );
 });
